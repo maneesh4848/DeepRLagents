@@ -9,6 +9,7 @@ from random import choice
 import numpy as np
 from collections import deque
 import time
+from datetime import datetime
 from tqdm import trange
 
 import json
@@ -94,7 +95,7 @@ class DoubleDQNAgent:
         
         # Check any kill count
         if (misc[0] > prev_misc[0]): # Use ammo
-            r_t = r_t - 0.05
+            r_t = r_t - 0.08
 
         if (misc[1] < prev_misc[1]): # LOSS HEALTH
             r_t = r_t - 0.1
@@ -257,7 +258,8 @@ if __name__ == "__main__":
     #pdb.set_trace()
     #while (not game.is_episode_finished()) and (t<100):
     epochs = 5
-    games_per_epoch = 1000
+    games_per_epoch = 10
+    json_data={}
     for ep in range(epochs):
         print("Epoch:", ep)
         #is_terminated = game.is_episode_finished()
@@ -324,6 +326,10 @@ if __name__ == "__main__":
                     
                 s_t = s_t1
                 t += 1
+                if t%50==0:
+                    with open('statistics/data'+'.json','w') as outfile:
+                        json_data[ep]=[np.mean(np.array(ammo_buffer)),np.mean(np.array(kills_buffer)),np.mean(np.array(score_buffer))]		
+                        json.dump(json_data,outfile)
 
                 # print info
                 state = ""
@@ -347,7 +353,7 @@ if __name__ == "__main__":
 
         # save progress every epoch
         print("Now we save model")
-        agent.model.save_weights("models/ddqn_centre_"+str(time.time())[:-3]+".h5", overwrite=True)
+        agent.model.save_weights("models/ddqn_centre_"+str(datetime.now())+".h5", overwrite=True)
 
         # Save Agent's Performance Statistics
         if ep*games_per_epoch % agent.stats_window_size == 0 and t > agent.observe: 
@@ -361,7 +367,7 @@ if __name__ == "__main__":
             life_buffer, ammo_buffer, kills_buffer = [], [], [] 
 
             # Write Rolling Statistics to file
-            with open("statistics/ddqn_stats_centre_"+str(time.time())[:-3]+".txt", "w") as stats_file:
+            with open("statistics/ddqn_stats_centre_"+str(datetime.now())+".txt", "w") as stats_file:
                 #stats_file.write('Game: ' + str(GAME) + '\n')
                 #stats_file.write('Max Score: ' + str(max_life) + '\n')
                 stats_file.write('mavg_score: ' + str(agent.mavg_score) + '\n')
