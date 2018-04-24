@@ -218,7 +218,7 @@ if __name__ == "__main__":
     game.load_config("../../scenarios/defend_the_center.cfg")
     game.set_sound_enabled(False)
     game.set_screen_resolution(ScreenResolution.RES_640X480)
-    game.set_window_visible(False)
+    game.set_window_visible(True)
     game.init()
 
     
@@ -253,7 +253,7 @@ if __name__ == "__main__":
     #life = 0
 
     # Buffer to compute rolling statistics 
-    score_buffer, ammo_buffer, kills_buffer = [], [], [] 
+    score_buffer, ammo_buffer, health_buffer = [], [], [] 
     
     #pdb.set_trace()
     #while (not game.is_episode_finished()) and (t<100):
@@ -299,7 +299,7 @@ if __name__ == "__main__":
                     #GAME += 1
                     #life_buffer.append(life)
                     ammo_buffer.append(misc[1])
-                    kills_buffer.append(misc[0])
+                    health_buffer.append(misc[0])
                     score = game.get_total_reward()
                     score_buffer.append(score)
                     print ("Episode Finish ", misc, score)
@@ -328,7 +328,7 @@ if __name__ == "__main__":
                 t += 1
                 if t%50==0:
                     with open('statistics/data'+'.json','w') as outfile:
-                        json_data[ep]=[np.mean(np.array(ammo_buffer)),np.mean(np.array(kills_buffer)),np.mean(np.array(score_buffer))]		
+                        json_data[ep]=[np.mean(np.array(ammo_buffer)),np.mean(np.array(health_buffer)),np.mean(np.array(score_buffer))]		
                         json.dump(json_data,outfile)
 
                 # print info
@@ -361,10 +361,10 @@ if __name__ == "__main__":
             agent.mavg_score.append(np.mean(np.array(score_buffer)))
             agent.var_score.append(np.var(np.array(score_buffer)))
             agent.mavg_ammo_left.append(np.mean(np.array(ammo_buffer)))
-            agent.mavg_kill_counts.append(np.mean(np.array(kills_buffer)))
+            agent.mavg_kill_counts.append(np.mean(np.array(health_buffer)))
 
             # Reset rolling stats buffer
-            life_buffer, ammo_buffer, kills_buffer = [], [], [] 
+            life_buffer, ammo_buffer, health_buffer = [], [], [] 
 
             # Write Rolling Statistics to file
             with open("statistics/ddqn_stats_centre_"+str(datetime.now())+".txt", "w") as stats_file:
@@ -381,7 +381,7 @@ if __name__ == "__main__":
     game.load_config("../../scenarios/defend_the_center.cfg")
     game.set_sound_enabled(False)
     game.set_screen_resolution(ScreenResolution.RES_640X480)
-    game.set_window_visible(False)
+    game.set_window_visible(True)
     game.init()
     action_size = game.get_available_buttons_size()
     episodes_to_watch=10
