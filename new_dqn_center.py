@@ -12,6 +12,8 @@ import time
 from datetime import datetime
 from tqdm import trange
 
+import os
+
 import json
 from keras.models import model_from_json
 from keras.models import Sequential, load_model, Model
@@ -53,15 +55,15 @@ class DoubleDQNAgent:
         self.initial_epsilon = 1.0
         self.final_epsilon = 0.0001
         self.batch_size = 32
-        self.observe = 5
-        self.explore = 5 
+        self.observe = 500
+        self.explore = 5000 
         self.frame_per_action = 4
-        self.update_target_freq = 30 
+        self.update_target_freq = 300 
         self.timestep_per_train = 10 # Number of timesteps between training interval
 
         # create replay memory using deque
         self.memory = deque()
-        self.max_memory = 50 # number of previous transitions to remember
+        self.max_memory = 500 # number of previous transitions to remember
 
         # create main model and target model
         self.model = None
@@ -73,6 +75,9 @@ class DoubleDQNAgent:
         self.var_score = [] # Variance of Survival Time
         self.mavg_ammo_left = [] # Moving Average of Ammo used
         self.mavg_kill_counts = [] # Moving Average of Kill Counts
+
+    def set_learning_rate(self,l_rate=0.0001):
+        self.learning_rate=l_rate
 
     def update_target_model(self):
         """
@@ -93,14 +98,14 @@ class DoubleDQNAgent:
 
     def shape_reward(self, r_t, misc, prev_misc, t):
         
-        # Check any kill count
+        
         if (misc[0] > prev_misc[0]): # Use ammo
             r_t = r_t - 0.08
 
         if (misc[1] < prev_misc[1]): # LOSS HEALTH
             r_t = r_t - 0.1
 
-        #if (misc[2] < prev_misc[2]): # Loss HEALTH
+        #if (misc[2] < prev_misc[2]): # KILL COUNT. No extra reward other than what games gives
         #    r_t = r_t - 0.1
 
         return r_t
@@ -156,16 +161,18 @@ class DoubleDQNAgent:
 
         # make minibatch which includes target q value and predicted q value
         # and do the model fit!
+        #print ("HERE!!!!",update_input.shape)
         loss = self.model.train_on_batch(update_input, target)
 
         return np.max(target[-1]), loss
 
     # Pick samples randomly from replay memory (with batch_size)
     def train_replay(self):
-
+        
         num_samples = min(self.batch_size * self.timestep_per_train, len(self.memory))
+        #print ("Check!!",)
         replay_samples = random.sample(self.memory, num_samples)
-
+        #pdb.set_trace()
         update_input = np.zeros(((num_samples,) + self.state_size)) 
         update_target = np.zeros(((num_samples,) + self.state_size))
         action, reward, done = [], [], []
@@ -193,6 +200,7 @@ class DoubleDQNAgent:
                 a = np.argmax(target_val[i])
                 target[i][action[i]] = reward[i] + self.gamma * (target_val_[i][a])
 
+        #print ("HERE!!!!",update_input.shape)
         loss = self.model.fit(update_input, target, batch_size=self.batch_size, nb_epoch=1, verbose=0)
 
         return np.max(target[-1]), loss.history['loss']
@@ -221,10 +229,20 @@ if __name__ == "__main__":
     game.set_window_visible(False)
     game.init()
 
-    
+    json_file_name = 'statistics/new_dqn_center_ph1.txt' #Saved every episode # (epoch_num,game_num,ammo,health,score)
+    #load_model_file_name = "./models/ddqn_centre_temp.h5" #Model from which it is initialized
+    save_model_file_name = "models/new_dqn_center_ph1.h5" #Saved every epoch
+    save_stats_file_name = "statistics/new_dqn_center_ph1.txt" #Saved every epoch
+
+    try:
+        os.remove(json_file_name) #Remove the json if initially present because it appends!!
+    except OSError:
+        pass
+
+
     game_state = game.get_state()
-    #misc = game_state.game_variables  # [KILLCOUNT, AMMO, HEALTH]
-    misc = game_state.game_variables  # [AMMO, HEALTH]
+    #misc = game_state.game_variables 
+    misc = game_state.game_variables  # [AMMO, HEALTH, KILLCOUNT]
     print ("HERE@@@@@@@@@@@: "+str(misc))
     prev_misc = misc
 
@@ -239,7 +257,23 @@ if __name__ == "__main__":
 
     agent.model = Networks.new_dqn(state_size, action_size, agent.learning_rate)
     agent.target_model = Networks.new_dqn(state_size, action_size, agent.learning_rate)
+    
+    #agent.load_model(load_model_file_name)
+    #agent.update_target_model()
+    """
+    end_layer=4 #Change the number accordingly #Here leaves Dense, BatchNorm, ReLU, Dense of PG
+    for layer in agent.model.layers[:end_layer]: 
+        layer.trainable=False
+    for layer in agent.model.layers[end_layer:]:
+        layer.trainable=True
 
+    for layer in agent.target_model.layers[:end_layer]: 
+        layer.trainable=False
+    for layer in agent.target_model.layers[end_layer:]:
+        layer.trainable=True
+
+    agent.set_learning_rate(0.0001) #IMP! #While fine-tuning need lower learning rate. Here left same
+    """
     x_t = game_state.screen_buffer # 480 x 640
     x_t = preprocessImg(x_t, size=(img_rows, img_cols))
     s_t = np.stack(([x_t]*4), axis=2) # It becomes 64x64x4
@@ -258,8 +292,9 @@ if __name__ == "__main__":
     #pdb.set_trace()
     #while (not game.is_episode_finished()) and (t<100):
     epochs = 5
-    games_per_epoch = 1000
+    games_per_epoch = 10
     json_data={}
+    temp_buffer=[]
     for ep in range(epochs):
         print("Epoch:", ep)
         #is_terminated = game.is_episode_finished()
@@ -271,6 +306,8 @@ if __name__ == "__main__":
             x_t1 = preprocessImg(x_t1, size=(img_rows, img_cols))
             x_t1 = np.reshape(x_t1, (1, img_rows, img_cols, 1))
             s_t1 = np.append(x_t1, s_t[:, :, :, :3], axis=3)
+
+            #num_kills=0 #Just for json_file printing
             while not game.is_episode_finished():
                 #pdb.set_trace()
                 #print ("GOING!!!!")
@@ -298,11 +335,14 @@ if __name__ == "__main__":
                     #    max_life = life
                     #GAME += 1
                     #life_buffer.append(life)
-                    ammo_buffer.append(misc[1])
-                    health_buffer.append(misc[0])
+                    ammo_buffer.append(misc[0])
+                    health_buffer.append(misc[1])
                     score = game.get_total_reward()
                     score_buffer.append(score)
+
+                    temp_buffer.append((ep,g,misc[0],misc[1],score)) #For printing to file
                     print ("Episode Finish ", misc, score)
+        
                     break
                     #game.new_episode()
                     
@@ -322,14 +362,11 @@ if __name__ == "__main__":
 
                 # Do the training
                 if t > agent.observe and t % agent.timestep_per_train == 0:
+                    #pdb.set_trace()
                     Q_max, loss = agent.train_replay()
                     
                 s_t = s_t1
-                t += 1
-                if t%50==0:
-                    with open('statistics/data'+'.json','w') as outfile:
-                        json_data[ep]=[np.mean(np.array(ammo_buffer)),np.mean(np.array(health_buffer)),np.mean(np.array(score_buffer))]		
-                        json.dump(json_data,outfile)
+                t += 1                    
 
                 # print info
                 state = ""
@@ -346,35 +383,46 @@ if __name__ == "__main__":
                           "/ Q_MAX %e" % np.max(Q_max), "/ LOSS", loss)
 
                 train_scores = np.array(score_buffer)
+                #sleep(0.1)
 
                 #print("Results: mean: %.1f-%.1f," % (train_scores.mean(), train_scores.std()), \
                 #  "min: %.1f," % train_scores.min(), "max: %.1f," % train_scores.max())
 
+            if g%50==0:
+                with open(json_file_name,'a') as myfile:
+                    for tup in temp_buffer:
+                        myfile.write(str(tup)+'\n')
+                    temp_buffer=[]
+
+        #Save temp_buffer after an epoch also
+        with open(json_file_name,'a') as myfile:
+            for tup in temp_buffer:
+                myfile.write(str(tup)+'\n')
+            temp_buffer=[]
 
         # save progress every epoch
         print("Now we save model")
-        agent.model.save_weights("models/ddqn_centre_"+str(datetime.now())+".h5", overwrite=True)
+        agent.model.save_weights(save_model_file_name, overwrite=True)
 
-        # Save Agent's Performance Statistics
-        if ep*games_per_epoch % agent.stats_window_size == 0 and t > agent.observe: 
-            print("Update Rolling Statistics")
-            agent.mavg_score.append(np.mean(np.array(score_buffer)))
-            agent.var_score.append(np.var(np.array(score_buffer)))
-            agent.mavg_ammo_left.append(np.mean(np.array(ammo_buffer)))
-            agent.mavg_kill_counts.append(np.mean(np.array(health_buffer)))
+        # Save Agent's Performance Statistics, every epoch
+        print("Update Rolling Statistics")
+        agent.mavg_score.append(np.mean(np.array(score_buffer)))
+        agent.var_score.append(np.var(np.array(score_buffer)))
+        agent.mavg_ammo_left.append(np.mean(np.array(ammo_buffer)))
+        agent.mavg_kill_counts.append(np.mean(np.array(health_buffer)))
 
-            # Reset rolling stats buffer
-            life_buffer, ammo_buffer, health_buffer = [], [], [] 
+        # Reset rolling stats buffer
+        life_buffer, ammo_buffer, health_buffer = [], [], [] 
 
-            # Write Rolling Statistics to file
-            with open("statistics/ddqn_stats_centre_"+str(datetime.now())+".txt", "w") as stats_file:
-                #stats_file.write('Game: ' + str(GAME) + '\n')
-                #stats_file.write('Max Score: ' + str(max_life) + '\n')
-                stats_file.write('mavg_score: ' + str(agent.mavg_score) + '\n')
-                stats_file.write('var_score: ' + str(agent.var_score) + '\n')
-                stats_file.write('mavg_ammo_left: ' + str(agent.mavg_ammo_left) + '\n')
-                stats_file.write('mavg_kill_counts: ' + str(agent.mavg_kill_counts) + '\n')
-                #pdb.set_trace()
+        # Write Rolling Statistics to file
+        with open(save_stats_file_name, "w") as stats_file:
+            #stats_file.write('Game: ' + str(GAME) + '\n')
+            #stats_file.write('Max Score: ' + str(max_life) + '\n')
+            stats_file.write('mavg_score: ' + str(agent.mavg_score) + '\n')
+            stats_file.write('var_score: ' + str(agent.var_score) + '\n')
+            stats_file.write('mavg_ammo_left: ' + str(agent.mavg_ammo_left) + '\n')
+            stats_file.write('mavg_kill_counts: ' + str(agent.mavg_kill_counts) + '\n')
+            #pdb.set_trace()
 
     print("Training done.... test time")
     game = DoomGame()
@@ -421,7 +469,7 @@ if __name__ == "__main__":
             s_t=s_t1
             x_t=x_t1
 
-        sleep(2)
+            sleep(1)
         score = game.get_total_reward()    
         print("Total score: ",score)
 
