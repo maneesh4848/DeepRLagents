@@ -63,7 +63,7 @@ class DoubleDQNAgent:
 
         # create replay memory using deque
         self.memory = deque()
-        self.max_memory = 500 # number of previous transitions to remember
+        self.max_memory = 100 # number of previous transitions to remember
 
         # create main model and target model
         self.model = None
@@ -232,7 +232,7 @@ if __name__ == "__main__":
     json_file_name = 'statistics/new_dqn_center_ph1.txt' #Saved every episode # (epoch_num,game_num,ammo,health,score)
     #load_model_file_name = "./models/ddqn_centre_temp.h5" #Model from which it is initialized
     save_model_file_name = "models/new_dqn_center_ph1.h5" #Saved every epoch
-    save_stats_file_name = "statistics/new_dqn_center_ph1.txt" #Saved every epoch
+    save_stats_file_name = "statistics/old_stats_new_dqn_center_ph1.txt" #Saved every epoch
 
     try:
         os.remove(json_file_name) #Remove the json if initially present because it appends!!
@@ -292,7 +292,7 @@ if __name__ == "__main__":
     #pdb.set_trace()
     #while (not game.is_episode_finished()) and (t<100):
     epochs = 5
-    games_per_epoch = 10
+    games_per_epoch = 1000
     json_data={}
     temp_buffer=[]
     for ep in range(epochs):
@@ -369,20 +369,20 @@ if __name__ == "__main__":
                 t += 1                    
 
                 # print info
-                state = ""
-                if t <= agent.observe:
-                    state = "observe"
-                elif t > agent.observe and t <= agent.observe + agent.explore:
-                    state = "explore"
-                else:
-                    state = "train"
+                #state = ""
+                #if t <= agent.observe:
+                #    state = "observe"
+                #elif t > agent.observe and t <= agent.observe + agent.explore:
+                #    state = "explore"
+                #else:
+                #    state = "train"
 
-                if (is_terminated):
-                    print("TIME", t, "/ STATE", state, \
-                          "/ EPSILON", agent.epsilon, "/ ACTION", action_idx, "/ REWARD", r_t, \
-                          "/ Q_MAX %e" % np.max(Q_max), "/ LOSS", loss)
+                #if (is_terminated):
+                #    print("TIME", t, "/ STATE", state, \
+                #          "/ EPSILON", agent.epsilon, "/ ACTION", action_idx, "/ REWARD", r_t, \
+                #         "/ Q_MAX %e" % np.max(Q_max), "/ LOSS", loss)
 
-                train_scores = np.array(score_buffer)
+                #train_scores = np.array(score_buffer)
                 #sleep(0.1)
 
                 #print("Results: mean: %.1f-%.1f," % (train_scores.mean(), train_scores.std()), \
@@ -469,7 +469,7 @@ if __name__ == "__main__":
             s_t=s_t1
             x_t=x_t1
 
-            sleep(1)
+            #sleep(1)
         score = game.get_total_reward()    
         print("Total score: ",score)
 
