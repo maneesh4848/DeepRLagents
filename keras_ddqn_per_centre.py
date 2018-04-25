@@ -141,6 +141,7 @@ class DoubleDQNAgent:
 		target_val = self.model.predict(eval_target) # Q(s') = [for all a, Q(s',a)]
 		target_val_ = self.target_model.predict(eval_target) # Q'(s') = [for all a, Q'(s',a)]
 
+		old_q = target[0][action]
 		#pdb.set_trace()
 		# like Q Learning, get maximum Q value at s'
 		# But from target model
@@ -153,7 +154,8 @@ class DoubleDQNAgent:
 			a = np.argmax(target_val[0]) # best action
 			target[0][action] = reward + self.gamma * (target_val_[0][a]) # DDQN update rule
 
-		loss = self.model.evaluate(eval_input, target, verbose = 0)
+		#loss = self.model.evaluate(eval_input, target, verbose = 0)
+		loss = abs(old_q - target[0][action])
 
 		#print ("loss", loss)
 		return loss
