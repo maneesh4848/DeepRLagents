@@ -52,15 +52,15 @@ class DoubleDQNAgent:
         self.initial_epsilon = 1.0
         self.final_epsilon = 0.0001
         self.batch_size = 32
-        self.observe = 5
-        self.explore = 5 
+        self.observe = 500
+        self.explore = 5000
         self.frame_per_action = 4
-        self.update_target_freq = 30 
+        self.update_target_freq = 300
         self.timestep_per_train = 10 # Number of timesteps between training interval
 
         # create replay memory using deque
         self.memory = deque()
-        self.max_memory = 50 # number of previous transitions to remember
+        self.max_memory = 500 # number of previous transitions to remember
 
         # create main model and target model
         self.model = None
@@ -214,7 +214,7 @@ if __name__ == "__main__":
     K.set_session(sess)
 
     game = DoomGame()
-    game.load_config("../../scenarios/simpler_basic.cfg")
+    game.load_config("./scenarios/simpler_basic.cfg")
     game.set_sound_enabled(False)
     game.set_screen_resolution(ScreenResolution.RES_640X480)
     game.set_window_visible(False)
@@ -256,7 +256,7 @@ if __name__ == "__main__":
     
     #pdb.set_trace()
     #while (not game.is_episode_finished()) and (t<100):
-    epochs = 5
+    epochs = 4
     games_per_epoch = 1000
     for ep in range(epochs):
         print("Epoch:", ep)
@@ -326,7 +326,7 @@ if __name__ == "__main__":
                 t += 1
 
                 # print info
-                state = ""
+                """state = ""
                 if t <= agent.observe:
                     state = "observe"
                 elif t > agent.observe and t <= agent.observe + agent.explore:
@@ -341,8 +341,8 @@ if __name__ == "__main__":
 
                 train_scores = np.array(score_buffer)
 
-                #print("Results: mean: %.1f-%.1f," % (train_scores.mean(), train_scores.std()), \
-                #  "min: %.1f," % train_scores.min(), "max: %.1f," % train_scores.max())
+                print("Results: mean: %.1f-%.1f," % (train_scores.mean(), train_scores.std()), \
+                  "min: %.1f," % train_scores.min(), "max: %.1f," % train_scores.max())"""
 
 
         # save progress every epoch
@@ -372,7 +372,7 @@ if __name__ == "__main__":
 
     print("Training done.... test time")
     game = DoomGame()
-    game.load_config("../../scenarios/simpler_basic.cfg")
+    game.load_config("./scenarios/simpler_basic.cfg")
     game.set_sound_enabled(False)
     game.set_screen_resolution(ScreenResolution.RES_640X480)
     game.set_window_visible(False)

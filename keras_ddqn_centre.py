@@ -215,10 +215,10 @@ if __name__ == "__main__":
     K.set_session(sess)
 
     game = DoomGame()
-    game.load_config("../../scenarios/defend_the_center.cfg")
+    game.load_config("./scenarios/defend_the_center.cfg")
     game.set_sound_enabled(False)
     game.set_screen_resolution(ScreenResolution.RES_640X480)
-    game.set_window_visible(True)
+    game.set_window_visible(False)
     game.init()
 
     
@@ -258,7 +258,7 @@ if __name__ == "__main__":
     #pdb.set_trace()
     #while (not game.is_episode_finished()) and (t<100):
     epochs = 5
-    games_per_epoch = 10
+    games_per_epoch = 1000
     json_data={}
     for ep in range(epochs):
         print("Epoch:", ep)
@@ -378,10 +378,10 @@ if __name__ == "__main__":
 
     print("Training done.... test time")
     game = DoomGame()
-    game.load_config("../../scenarios/defend_the_center.cfg")
+    game.load_config("./scenarios/defend_the_center.cfg")
     game.set_sound_enabled(False)
     game.set_screen_resolution(ScreenResolution.RES_640X480)
-    game.set_window_visible(True)
+    game.set_window_visible(False)
     game.init()
     action_size = game.get_available_buttons_size()
     episodes_to_watch=10
