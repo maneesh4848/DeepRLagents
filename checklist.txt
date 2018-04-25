@@ -1,0 +1,14 @@
+PER:
+	For Centre and basic... compare new_dqn with new_dqn_with_per
+
+With Context:
+	For Center and basic... compare drqn with LSTM, simple_RNN and GRU
+
+Normal Transfer Learning:
+	1) Compare Train_from_scratch on basic with Load_from_centre directly on basic
+	2) Add in, Load_from_centre-fine_tune_last and then run on basic
+
+Incrermental Transfer Learning:
+	1) Load_center-Train_basic on less_actions_deathmatch (need comparison here?)
+	2) Add in, Fine_tune_with_more_actions
+
