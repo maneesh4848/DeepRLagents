@@ -4,8 +4,8 @@ Modelling intelligent game playing agents using deep neural nets and reinforceme
 
 Team
 -----
-[Maneesh Tipirineni](maneesh4848@gmail.com)
-[Sanjay Reddy S](sanjayreddys07@gmail.com)
+[Maneesh Tipirineni](https://github.com/maneesh4848)
+[Sanjay Reddy S](https://github.com/Sanjay-Reddy-S)
 
 Prerequisites
 ---------------
