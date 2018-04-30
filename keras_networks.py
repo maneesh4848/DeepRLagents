@@ -185,7 +185,7 @@ class Networks(object):
         # state value tower - V
         state_value = Dense(256, activation='relu')(x)
         state_value = Dense(1, init='uniform')(state_value)
-        state_value = Lambda(lambda s: K.expand_dims(s[:, 0], dim=-1), output_shape=(action_size,))(state_value)
+        state_value = Lambda(lambda s: K.expand_dims(s[:, 0]), output_shape=(action_size,))(state_value)
 
         # action advantage tower - A
         action_advantage = Dense(256, activation='relu')(x)

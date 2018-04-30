@@ -63,7 +63,7 @@ class DoubleDQNAgent:
 
         # create replay memory using deque
         self.memory = deque()
-        self.max_memory = 500 # number of previous transitions to remember
+        self.max_memory = 5000 # number of previous transitions to remember
 
         # create main model and target model
         self.model = None
@@ -223,14 +223,14 @@ if __name__ == "__main__":
     K.set_session(sess)
 
     game = DoomGame()
-    game.load_config("./scenarios/defend_the_center.cfg")
+    game.load_config("./scenarios/simpler_basic.cfg")
     game.set_sound_enabled(False)
     game.set_screen_resolution(ScreenResolution.RES_640X480)
-    game.set_window_visible(False)
+    game.set_window_visible(True)
     game.init()
 
     json_file_name = 'statistics/data_test_del_me.txt' #Saved every episode # (epoch_num,game_num,ammo,health,score)
-    load_model_file_name = "./models/ddqn_centre_temp.h5" #Model from which it is initialized
+    load_model_file_name = "./models/new_ddqn_basic_ph1.h5" #Model from which it is initialized
     save_model_file_name = "models/ddqn_test_del_me.h5" #Saved every epoch
     save_stats_file_name = "statistics/ddqn_test_del_me.txt" #Saved every epoch
 
@@ -383,7 +383,7 @@ if __name__ == "__main__":
                           "/ Q_MAX %e" % np.max(Q_max), "/ LOSS", loss)
 
                 train_scores = np.array(score_buffer)
-                #sleep(0.1)
+                sleep(0.1)
 
                 #print("Results: mean: %.1f-%.1f," % (train_scores.mean(), train_scores.std()), \
                 #  "min: %.1f," % train_scores.min(), "max: %.1f," % train_scores.max())
@@ -426,7 +426,7 @@ if __name__ == "__main__":
 
     print("Training done.... test time")
     game = DoomGame()
-    game.load_config("./scenarios/defend_the_center.cfg")
+    game.load_config("./scenarios/simpler_basic.cfg")
     game.set_sound_enabled(False)
     game.set_screen_resolution(ScreenResolution.RES_640X480)
     game.set_window_visible(True)
@@ -469,7 +469,7 @@ if __name__ == "__main__":
             s_t=s_t1
             x_t=x_t1
 
-            sleep(1)
+            sleep(0.5)
         score = game.get_total_reward()    
         print("Total score: ",score)
 
