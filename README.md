@@ -4,10 +4,13 @@ Modelling intelligent game playing agents using deep neural nets and reinforceme
 
 Team
 -----
-Maneesh Tipirineni
-Sanjay Reddy S
+[Maneesh Tipirineni](https://github.com/maneesh4848)
+[Sanjay Reddy S](https://github.com/Sanjay-Reddy-S)
 
 Prerequisites
 ---------------
 Python2
-OpenAI Gym
+
+[Vizdoom](http://vizdoom.cs.put.edu.pl/tutorial#install)
+
+[Keras](https://keras.io/) (On [Tensorflow](https://www.tensorflow.org/install/))
