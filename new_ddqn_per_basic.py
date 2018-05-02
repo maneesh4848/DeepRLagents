@@ -63,7 +63,7 @@ class DoubleDQNAgent:
 
 		# create replay memory (prioritized experience replay) using deque
 		self.memory = deque()
-		self.max_memory = 100 # number of previous transitions to remember
+		self.max_memory = 10000 # number of previous transitions to remember
 		self.prioritization_const = 0.5
 		self.priorities = deque()
 
@@ -271,6 +271,7 @@ if __name__ == "__main__":
 	game.set_sound_enabled(False)
 	game.set_screen_resolution(ScreenResolution.RES_640X480)
 	game.set_window_visible(False)
+	game.set_mode(Mode.PLAYER)
 	game.init()
 
 	json_file_name = 'statistics/new_ddqn_per_basic_ph1.txt' #Saved every episode # (epoch_num,game_num,ammo,health,score)
@@ -454,7 +455,8 @@ if __name__ == "__main__":
 	game.load_config("./scenarios/simpler_basic.cfg")
 	game.set_sound_enabled(False)
 	game.set_screen_resolution(ScreenResolution.RES_640X480)
-	game.set_window_visible(True)
+	game.set_window_visible(False)
+	game.set_mode(Mode.PLAYER)
 	game.init()
 	action_size = game.get_available_buttons_size()
 	episodes_to_watch=10
@@ -494,7 +496,7 @@ if __name__ == "__main__":
 			s_t=s_t1
 			x_t=x_t1
 
-			#sleep(1)
+			#sleep(0.5)
 		score = game.get_total_reward()    
 		print("Total score: ",score)
 
