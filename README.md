@@ -2,6 +2,8 @@
 
 Modelling intelligent game playing agents using deep neural nets and reinforcement learning.
 
+Please refer the report NN-project-report.pdf in this repo for more context.
+
 Team
 -----
 [Maneesh Tipirineni](https://github.com/maneesh4848)
