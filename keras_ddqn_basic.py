@@ -39,35 +39,35 @@ def preprocessImg(img, size):
 
 class DoubleDQNAgent:
 
-    def __init__(self, state_size, action_size):
+    def __init__(self, state_size, action_size, params):
 
         # get size of state and action
         self.state_size = state_size
         self.action_size = action_size
 
         # these is hyper parameters for the Double DQN
-        self.gamma = 0.99
-        self.learning_rate = 0.0001
-        self.epsilon = 1.0
-        self.initial_epsilon = 1.0
-        self.final_epsilon = 0.0001
-        self.batch_size = 32
-        self.observe = 500
-        self.explore = 5000
-        self.frame_per_action = 4
-        self.update_target_freq = 300
-        self.timestep_per_train = 10 # Number of timesteps between training interval
+        self.gamma = params['gamma']
+        self.learning_rate = params['lr']
+        self.epsilon = params['eps']
+        self.initial_epsilon = params['init_eps']
+        self.final_epsilon = params['final_eps']
+        self.batch_size = params['batch_size']
+        self.observe = params['obs']
+        self.explore = params['exp']
+        self.frame_per_action = params['fpa']
+        self.update_target_freq = params['target_freq']
+        self.timestep_per_train = params['timestep_train'] # Number of timesteps between training interval
 
         # create replay memory using deque
         self.memory = deque()
-        self.max_memory = 500 # number of previous transitions to remember
+        self.max_memory = params['max_memory'] # number of previous transitions to remember
 
         # create main model and target model
         self.model = None
         self.target_model = None
 
         # Performance Statistics
-        self.stats_window_size= 50 # window size for computing rolling statistics
+        self.stats_window_size = 50 # window size for computing rolling statistics
         self.mavg_score = [] # Moving Average of Survival Time
         self.var_score = [] # Variance of Survival Time
         self.mavg_ammo_left = [] # Moving Average of Ammo used
@@ -92,15 +92,12 @@ class DoubleDQNAgent:
 
     def shape_reward(self, r_t, misc, prev_misc, t):
         
-        # Check any kill count
+        
         if (misc[0] > prev_misc[0]): # Use ammo
             r_t = r_t - 0.05
 
         if (misc[1] < prev_misc[1]): # LOSS HEALTH
             r_t = r_t - 0.1
-
-        #if (misc[2] < prev_misc[2]): # Loss HEALTH
-        #    r_t = r_t - 0.1
 
         return r_t
 
@@ -222,7 +219,6 @@ if __name__ == "__main__":
 
     
     game_state = game.get_state()
-    #misc = game_state.game_variables  # [KILLCOUNT, AMMO, HEALTH]
     misc = game_state.game_variables  # [AMMO, HEALTH]
     print ("HERE@@@@@@@@@@@: "+str(misc))
     prev_misc = misc
@@ -234,7 +230,10 @@ if __name__ == "__main__":
     img_channels = 4 # We stack 4 frames
 
     state_size = (img_rows, img_cols, img_channels)
-    agent = DoubleDQNAgent(state_size, action_size)
+    params = {'gamma': 0.99, 'lr': 0.0001, 'eps': 1.0, 'init_eps': 1.0,
+              'final_eps': 0.0001,'batch_size': 32,'obs': 500,'exp': 5000,
+              'fpa': 4,'target_freq': 300,'timestep_train': 10,'max_memory': 500}
+    agent = DoubleDQNAgent(state_size, action_size, params)
 
     agent.model = Networks.new_dqn(state_size, action_size, agent.learning_rate)
     agent.target_model = Networks.new_dqn(state_size, action_size, agent.learning_rate)
