@@ -5,6 +5,8 @@ from skimage import transform, color, exposure
 from skimage.viewer import ImageViewer
 import numpy as np
 from tqdm import trange
+import argparse
+from time import sleep
 
 img_rows, img_cols, img_channels = 64, 64, 4
 
@@ -15,7 +17,19 @@ def preprocessImg(img, size):
     img = skimage.color.rgb2gray(img)
 
     return img
-    
+
+def get_argparser():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-p','--per', action="store_true", help="Use proiritized experience replay")
+    parser.add_argument('-s','--scenario',  type=str, required=True, help="Scenario config file")
+    parser.add_argument('-m','--model', default="../models/trained_model.h5", type=str, required=False, help="File to save trained model to")
+    parser.add_argument('-o','--epochs', default=5, type=int, required=False, help="Number of training epochs")
+    parser.add_argument('-g','--games_per_epoch', default=1000, type=int, required=False, help="Number of episodes per epoch")
+    parser.add_argument('-t','--test_scenario',  type=str, required=True, help="Scenario config file")
+    parser.add_argument('-e','--test_episodes', default=25, type=int, required=False, help="Number of testing episodes")
+
+    return parser
+
 def play_epoch(game, agent, epoch, episodes_per_epoch, t, stats_writer):
 
     game.new_episode()
@@ -34,10 +48,16 @@ def play_epoch(game, agent, epoch, episodes_per_epoch, t, stats_writer):
         s_t, t, prev_game_vars = play_episode(game, agent, action_size, epoch, g, t, True, ammo_buffer, health_buffer, score_buffer, stats_buffer, s_t)
 
         if g%50==0:
-            stats_writer.writeline('\n'.join(str(stats_buffer)))
+            str_buffer = ""
+            for tup in stats_buffer:
+                str_buffer += str(tup) + '\n'
+            stats_writer.write(str_buffer)
 
     #Save stats_buffer after an epoch also
-    stats_writer.writeline('\n'.join(str(stats_buffer)))
+    str_buffer = ""
+    for tup in stats_buffer:
+        str_buffer += str(tup) + '\n'
+    stats_writer.write(str_buffer)
 
     # Save Agent's Performance Statistics, every epoch
     print("Update Rolling Statistics")
@@ -48,7 +68,7 @@ def play_epoch(game, agent, epoch, episodes_per_epoch, t, stats_writer):
 
     return t
 
-def play_episode(game, agent, action_size, epoch, game_num, t, learn = True, ammo_buffer = None, health_buffer = None, score_buffer = None, stats_buffer = None, s_t = None):
+def play_episode(game, agent, action_size, epoch, game_num, t, learn = True, ammo_buffer = None, health_buffer = None, score_buffer = None, stats_buffer = None, s_t = None, delay = 0):
 
     game.new_episode()
     game_state = game.get_state()
@@ -116,7 +136,7 @@ def play_episode(game, agent, action_size, epoch, game_num, t, learn = True, amm
                 Q_max, loss = new_Q_max, new_loss
 
         s_t = s_t1
-        t += 1                    
+        t += 1
 
         # print info
         #state = ""
@@ -137,6 +157,9 @@ def play_episode(game, agent, action_size, epoch, game_num, t, learn = True, amm
 
         #print("Results: mean: %.1f-%.1f," % (train_scores.mean(), train_scores.std()), \
                 #  "min: %.1f," % train_scores.min(), "max: %.1f," % train_scores.max())
+
+        if delay > 0:
+            sleep(delay)
 
     return s_t, t, prev_game_vars
 
