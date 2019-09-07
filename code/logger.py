@@ -1,5 +1,5 @@
 from __future__ import print_function
-from enum import Enum, unique
+from enum import IntEnum, unique
 from datetime import datetime
 
 class FileWriter:
@@ -14,7 +14,7 @@ class FileWriter:
             self.__open_file()
 
     def __open_file(self):
-        if self__filename != None:
+        if self.__filename != None:
             try:
                 self.__fobj = open(self.__filename, self.__write_mode)
             except IOError as err:
@@ -47,7 +47,7 @@ class FileWriter:
 
 
 @unique
-class LogLevel(Enum):
+class LogLevel(IntEnum):
     Always = 1
     Warn   = 2
     Info   = 4
@@ -66,9 +66,9 @@ class LogWriter:
         
         if log_level <= self.__log_level:    
             timestamp = timestamp.strftime("%Y%m%d-%H%M%S.%f")
-            log_line = "[0] %1 ---- %2".format(log_level.Name, timestamp, log)
+            log_line = "[{0}] {1} ---- {2}".format(log_level.name, timestamp, log)
 
-            if log_file:
+            if self.__log_file_writer:
                 self.__log_file_writer.writeline(log_line)
             else:
                 print(log_line + '\n')

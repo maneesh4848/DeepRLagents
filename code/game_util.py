@@ -27,6 +27,7 @@ def get_argparser():
     parser.add_argument('-g','--games_per_epoch', default=1000, type=int, required=False, help="Number of episodes per epoch")
     parser.add_argument('-t','--test_scenario',  type=str, required=True, help="Scenario config file")
     parser.add_argument('-e','--test_episodes', default=25, type=int, required=False, help="Number of testing episodes")
+    parser.add_argument('-l','--log', default="", type=str, required=False, help="File to save logs to")
 
     return parser
 

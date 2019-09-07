@@ -14,14 +14,19 @@ import tensorflow as tf
 import time
 from networks.keras_networks import Networks
 from networks.ddqn import DoubleDQNAgent
-from logger import FileWriter
+from logger import *
 
 
 def main():
 
     parser = get_argparser()
     args = parser.parse_args()
-    print(args)
+
+    log_writer = None
+    if args.log != "":
+        log_writer = LogWriter(args.log)
+    else:
+        log_writer = LogWriter()
 
     # Avoid Tensorflow eats up GPU memory
     config = tf.ConfigProto()
@@ -67,11 +72,11 @@ def main():
     epochs = args.epochs
     games_per_epoch = args.games_per_epoch
     for epoch in range(epochs):
-        print("Epoch:", epoch)
+        log_writer.write_log("Epoch: {0}".format(str(epoch)), log_level = LogLevel.Info)
         t = play_epoch(game, agent, epoch, games_per_epoch, t, stats_file_logger)
 
         # save progress every epoch
-        print("Now we save model")
+        log_writer.write_log("Now we save model", log_level = LogLevel.Info)
         agent.save_model(save_model_file_name)
 
         # Reset rolling stats buffer
@@ -84,7 +89,7 @@ def main():
         stats_file_logger.writeline("mavg_kill_counts: " + str(agent.mavg_kill_counts))
         stats_file_logger.writeline("")
 
-    print("Training done.... test time")
+    log_writer.write_log("Training done... test time", log_level = LogLevel.Info)
     game = DoomGame()
     game.load_config(args.test_scenario)
     game.set_sound_enabled(False)
@@ -97,7 +102,7 @@ def main():
         s_t, t, prev_vars = play_episode(game, agent, action_size, 0, i, t, False, delay = 0.1)
 
         score = game.get_total_reward()    
-        print("Total score: ",score)
+        log_writer.write_log("Total score: {0}".format(str(score)), log_level = LogLevel.Always)
 
 if __name__ == "__main__":
     main()
