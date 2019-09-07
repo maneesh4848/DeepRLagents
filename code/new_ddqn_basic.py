@@ -51,7 +51,7 @@ def main():
     params = {'gamma': 0.99, 'lr': 0.0001, 'eps': 1.0, 'init_eps': 1.0,
               'final_eps': 0.0001,'batch_size': 32,'obs': 500,'exp': 5000,
               'fpa': 4,'target_freq': 300,'timestep_train': 10,'max_memory': 500}
-    agent = DoubleDQNAgent(state_size, action_size, params)
+    agent = DoubleDQNAgent(state_size, action_size, args.per, params)
 
     agent.set_model(Networks.new_dqn(state_size, action_size, params["lr"]))
     agent.set_target_model(Networks.new_dqn(state_size, action_size, params["lr"]))

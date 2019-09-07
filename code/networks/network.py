@@ -42,9 +42,9 @@ class Network_Base:
 
 class Network(Network_Base):
 
-    def __init__(self, name, state_size, action_size, params):
+    def __init__(self, name, state_size, action_size, use_per, params):
 
-        default_params = {'gamma': 0.99, 'lr': 0.0001, 'eps': 1.0, 'fpa': 4, 'max_memory': 500}
+        default_params = {'gamma': 0.99, 'lr': 0.0001, 'eps': 1.0, 'fpa': 4, 'max_memory': 500, 'per_const': 0.5}
 
         sanity_check_params(params, default_params)
         super().__init__(name)
@@ -53,15 +53,18 @@ class Network(Network_Base):
         self._state_size = state_size
         self._action_size = action_size
 
-        # create replay memory using deque
+        # create replay memory using deque (proritized experience replay)
         self._memory = deque()
         self._max_memory = params["max_memory"] # number of previous transitions to remember
+	self._priorities = deque()
+	self._prioritization_const = params["per_const"]
+        self._use_per = use_per
 
         # setting hyperparameters
         self._gamma = params["gamma"]
         self._learning_rate = params["lr"]
         self._epsilon = params["eps"]
-        self._frame_per_action = params['fpa']
+        self._frame_per_action = params["fpa"]
 
         # Performance Statistics
         self.stats_window_size = 50 # window size for computing rolling statistics
