@@ -1,4 +1,0 @@
-mavg_score: [6.014]
-var_score: [10.673804]
-mavg_ammo_left: [12.406]
-mavg_kill_counts: [6.358]
